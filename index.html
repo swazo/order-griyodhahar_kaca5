@@ -850,6 +850,7 @@ function resetOrder(){
   document.querySelectorAll("select").forEach(el => el.selectedIndex = 0);
 
   toggleMeja();
+   updateSummary();
 }
 function validasiNama(el){el.value=el.value.replace(/[^a-zA-Z\s]/g,"");}
 function rupiah(n){return n.toLocaleString("id-ID");}
