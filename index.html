@@ -313,13 +313,71 @@ th,td{
 /* ===== MOBILE TABLE SCROLL ===== */
 .table-wrap{
   width:100%;
-  overflow-x:auto;
+  overflow-x:visible;
 }
 
 @media(max-width:480px){
   #tabel{
     min-width:420px;
   }
+}
+
+/* ================= MOBILE FIX: SEMUA KELIHATAN ================= */
+@media (max-width:480px){
+
+  .table-wrap{
+    overflow:visible !important;
+  }
+
+  #tabel thead{
+    display:none;
+  }
+
+  #tabel tr{
+    display:block;
+    background:#fff;
+    border-radius:14px;
+    padding:12px;
+    margin-bottom:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,.06);
+  }
+
+  #tabel td{
+    border:none;
+    padding:4px 0;
+  }
+
+  /* BARIS ATAS: NAMA MENU */
+  #tabel td:nth-child(1){
+    font-weight:600;
+    font-size:15px;
+    margin-bottom:6px;
+  }
+
+  /* BARIS BAWAH: qty + subtotal + hapus sejajar */
+  #tabel td:nth-child(2),
+  #tabel td:nth-child(3),
+  #tabel td:nth-child(4){
+    display:inline-flex;
+    align-items:center;
+    vertical-align:middle;
+  }
+
+  /* bungkus jadi satu baris */
+  #tabel tr{
+    display:block;
+  }
+
+  /* container baris bawah */
+  #tabel tr::after{
+    content:"";
+    display:block;
+    clear:both;
+  }
+
+  #tabel td:nth-child(2){ width:45%; }
+  #tabel td:nth-child(3){ width:35%; font-weight:600; color:#b08d57; }
+  #tabel td:nth-child(4){ width:20%; text-align:right; }
 }
 
 </style>
@@ -924,3 +982,12 @@ function editQty(index, arah){
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
