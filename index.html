@@ -278,8 +278,21 @@ th,td{
 }
 
 #tabel{
-  table-layout: fixed;
   width:100%;
+}
+
+/* Desktop tetap rapi */
+@media(min-width:481px){
+  #tabel{
+    table-layout: fixed;
+  }
+
+  #tabel th,
+  #tabel td{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
 }
 
 #tabel th,
@@ -297,6 +310,17 @@ th,td{
   }
 }
 
+/* ===== MOBILE TABLE SCROLL ===== */
+.table-wrap{
+  width:100%;
+  overflow-x:auto;
+}
+
+@media(max-width:480px){
+  #tabel{
+    min-width:420px;
+  }
+}
 
 </style>
 </head>
@@ -402,12 +426,19 @@ Tipe Orderan
   <button class="btn primary" onclick="tambah()">Tambah</button>
 </div>
 
-<table id="tabel">
-<thead>
-<tr><th>Menu</th><th>Qty</th><th>Subtotal</th><th>Hapus</th></tr>
-</thead>
-<tbody></tbody>
-</table>
+<div class="table-wrap">
+  <table id="tabel">
+    <thead>
+      <tr>
+        <th>Menu</th>
+        <th>Qty</th>
+        <th>Subtotal</th>
+        <th>Hapus</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
 <div class="total">Total: Rp <span id="total">0</span></div>
 <br>
@@ -893,12 +924,3 @@ function editQty(index, arah){
 </body>
 
 </html>
-
-
-
-
-
-
-
-
-
