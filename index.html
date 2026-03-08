@@ -380,6 +380,47 @@ th,td{
   #tabel td:nth-child(4){ width:20%; text-align:right; }
 }
 
+.menu-qty-row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.menu-qty-row select{
+  flex:1;
+}
+
+.qty-menu{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  background:#f3ede4;
+  padding:4px 8px;
+  border-radius:999px;
+}
+
+.qty-menu button{
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  border:none;
+  background:#fff;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 1px 3px rgba(0,0,0,.15);
+}
+
+.qty-menu button:hover{
+  background:#e9dcc7;
+}
+
+#qtyValue{
+  min-width:18px;
+  text-align:center;
+  font-weight:600;
+}
+
+
 </style>
 </head>
 <body>
@@ -408,9 +449,9 @@ Tipe Orderan
 </label>
 <select id="tipeBelanja" onchange="toggleMeja()">
 <option value="">-- Pilih Tipe --</option>
-<!-- <option value="Dine-in">Dine-in</option> --!>
+<!-- <option value="Dine-in">Dine-in</option> -->
 <option value="Dine-in Puasa">Dine-in (Puasa)</option>
-<!-- <option value="Take-away">Take-away</option> --!>
+<!-- <option value="Take-away">Take-away</option> -->
 </select>
 
 <div id="wrapMeja" class="slide-show">
@@ -460,6 +501,8 @@ Tipe Orderan
 <h3>Pesanan</h3>
 
 <div class="grid-2">
+
+<div>
 <label>Kategori</label>
 <select id="kategori" onchange="filterMenu()">
 <option value="">-- Pilih Type --</option>
@@ -470,18 +513,22 @@ Tipe Orderan
 <option value="sayur">Sayur</option>
 <option value="tambahan">Tambahan</option>
 </select>
+</div>
 
+<div>
 <label>Menu</label>
+<div class="menu-qty-row">
 <select id="menu">
 <option value="">-- Pilih Menu --</option>
 </select>
 
-<label>Jumlah Orderan</label>
-<input type="number" id="qty" placeholder="Masukkan Jumlah Orderan">
+<div class="qty-menu">
+<button type="button" onclick="ubahQty(-1)">−</button>
+<span id="qtyValue">1</span>
+<button type="button" onclick="ubahQty(1)">+</button>
 </div>
-
-<div class="tambah-row">
-  <button class="btn primary" onclick="tambah()">Tambah</button>
+</div>
+</div>
 </div>
 
 <div class="table-wrap">
@@ -772,32 +819,30 @@ function tambah(){
     return fokusError(menu);
   }
 
-  if(!qty.value || qty.value <= 0){
-    alert("Jumlah orderan wajib diisi!");
-    return fokusError(qty); // <-- ini akan shake + border merah
-  }
+  const val = menu.value;
+  const qtyVal = qtySelected;
+  const [nama,h] = val.split("|");
+  const harga = parseInt(h);
 
-  const val=menu.value;
-  const qtyVal=parseInt(qty.value);
-  const [nama,h]=val.split("|");
-  const harga=parseInt(h);
+  orders.push({
+    nama,
+    qty: qtyVal,
+    harga: harga,
+    subtotal: harga * qtyVal
+  });
 
- orders.push({
-  nama,
-  qty: qtyVal,
-  harga: harga,
-  subtotal: harga * qtyVal
-});
-  total=orders.reduce((s,o)=>s+o.subtotal,0);
+  total = orders.reduce((s,o)=>s+o.subtotal,0);
   render();
 
   // reset form
   kategori.value="";
   menu.innerHTML='<option value="">-- Pilih Menu --</option>';
   menu.value="";
-  qty.value="";
 
-  // fokus balik ke kategori
+  // reset qty
+  qtySelected = 1;
+  document.getElementById("qtyValue").textContent = 1;
+
   kategori.focus();
 }
 
@@ -978,16 +1023,54 @@ function editQty(index, arah){
   total = orders.reduce((s,o)=>s+o.subtotal,0);
   render();
 }
+
+let qtySelected = 1;
+
+function ubahQty(arah){
+
+  if(!menu.value){
+    alert("Pilih menu dulu!");
+    return;
+  }
+
+  const val = menu.value;
+  const [nama,h] = val.split("|");
+  const harga = parseInt(h);
+
+  if(arah === 1){
+    orders.push({
+      nama,
+      qty: 1,
+      harga: harga,
+      subtotal: harga
+    });
+  }
+
+  if(arah === -1){
+    for(let i = orders.length - 1; i >= 0; i--){
+      if(orders[i].nama === nama){
+        orders.splice(i,1);
+        break;
+      }
+    }
+  }
+
+  total = orders.reduce((s,o)=>s+o.subtotal,0);
+  render();
+
+  // update angka visual
+  qtySelected += arah;
+  if(qtySelected < 1) qtySelected = 1;
+
+  document.getElementById("qtyValue").textContent = qtySelected;
+}
+
+qtySelected = 1;
+document.getElementById("qtyValue").textContent = 1;
+
+
 </script>
 </body>
 
 </html>
-
-
-
-
-
-
-
-
 
