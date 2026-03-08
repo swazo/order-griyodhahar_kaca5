@@ -275,6 +275,13 @@ th,td{
 .qty-number{
   min-width:18px;
   font-weight:600;
+  cursor:pointer;
+  padding:4px 10px;
+  border-radius:6px;
+}
+
+.qty-number:hover{
+  background:#f3ede4;
 }
 
 #tabel{
@@ -380,46 +387,51 @@ th,td{
   #tabel td:nth-child(4){ width:20%; text-align:right; }
 }
 
-.menu-qty-row{
-  display:flex;
-  gap:10px;
-  align-items:center;
-}
-
-.menu-qty-row select{
-  flex:1;
-}
-
-.qty-menu{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  background:#f3ede4;
-  padding:4px 8px;
-  border-radius:999px;
-}
-
-.qty-menu button{
-  width:26px;
-  height:26px;
-  border-radius:50%;
-  border:none;
-  background:#fff;
-  font-weight:700;
-  cursor:pointer;
-  box-shadow:0 1px 3px rgba(0,0,0,.15);
-}
-
 .qty-menu button:hover{
   background:#e9dcc7;
 }
 
-#qtyValue{
-  min-width:18px;
-  text-align:center;
-  font-weight:600;
+.menu-list{
+  border:1px solid #ddd;
+  border-radius:10px;
+  max-height:300px;
+  overflow-y:auto;
+  margin-top:6px;
 }
 
+.menu-item{
+  padding:10px 12px;
+  border-bottom:1px solid #eee;
+  cursor:pointer;
+  transition:.2s;
+  user-select:none;
+}
+
+.menu-item:hover{
+  background:#f3ede4;
+}
+
+.menu-item:last-child{
+  border-bottom:none;
+}
+.menu-clicked{
+  animation:menuFlash .35s ease;
+}
+
+@keyframes menuFlash{
+  0%{background:#f3ede4;}
+  100%{background:white;}
+}
+
+.tableFlash{
+  animation:tableFlash .25s ease;
+}
+
+@keyframes tableFlash{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.01);}
+  100%{transform:scale(1);}
+}
 
 </style>
 </head>
@@ -517,18 +529,11 @@ Tipe Orderan
 
 <div>
 <label>Menu</label>
-<div class="menu-qty-row">
-<select id="menu">
-<option value="">-- Pilih Menu --</option>
-</select>
+<div id="menuList" class="menu-list">
+Pilih kategori dulu
+</div>
+</div>
 
-<div class="qty-menu">
-<button type="button" onclick="ubahQty(-1)">−</button>
-<span id="qtyValue">1</span>
-<button type="button" onclick="ubahQty(1)">+</button>
-</div>
-</div>
-</div>
 </div>
 
 <div class="table-wrap">
@@ -797,15 +802,70 @@ function toggleMeja(){
 }
 
 function filterMenu(){
-  menu.innerHTML='<option value="">-- Pilih Menu --</option>';
-  const k=kategori.value;
-  if(!menuDB[k]) return;
+
+  const list = document.getElementById("menuList");
+  const k = kategori.value;
+
+  list.innerHTML = "";
+
+  if(!menuDB[k]){
+    list.innerHTML = "Pilih kategori dulu";
+    return;
+  }
+
   menuDB[k].forEach(m=>{
-    const o=document.createElement("option");
-    o.value=`${m.nama}|${m.harga}`;
-    o.textContent=m.nama;
-    menu.appendChild(o);
+
+    list.innerHTML += `
+      <div class="menu-item"
+      onclick="klikMenu(this,'${m.nama}',${m.harga})">
+      ${m.nama}
+      </div>
+    `;
+
   });
+
+}
+
+function klikMenu(el,nama,harga){
+
+  el.classList.add("menu-clicked");
+
+  setTimeout(()=>{
+    el.classList.remove("menu-clicked");
+  },350);
+
+  tambahMenu(nama,harga);
+
+}
+
+function tambahMenu(nama,harga){
+
+  let existing = orders.find(o => o.nama === nama);
+
+  if(existing){
+    existing.qty += 1;
+    existing.subtotal = existing.qty * existing.harga;
+  }else{
+    orders.push({
+      nama:nama,
+      qty:1,
+      harga:harga,
+      subtotal:harga
+    });
+  }
+
+  total = orders.reduce((s,o)=>s+o.subtotal,0);
+
+  render();
+
+  // animasi tabel
+  const table = document.getElementById("tabel");
+  table.classList.add("tableFlash");
+
+  setTimeout(()=>{
+    table.classList.remove("tableFlash");
+  },250);
+
 }
 
 function tambah(){
@@ -855,13 +915,13 @@ function render(){
     <tr>
       <td>${o.nama}</td>
 
-      <td>
-        <div class="qty-inline">
-          <button class="qty-mini" onclick="editQty(${i}, -1)">−</button>
-          <span class="qty-number">${o.qty}</span>
-          <button class="qty-mini" onclick="editQty(${i}, 1)">+</button>
-        </div>
-      </td>
+<td>
+  <div class="qty-inline">
+    <button class="qty-mini" onclick="editQty(${i}, -1)">−</button>
+    <span class="qty-number">${o.qty}</span>
+    <button class="qty-mini" onclick="editQty(${i}, 1)">+</button>
+  </div>
+</td>
 
       <td>Rp ${rupiah(o.subtotal)}</td>
 
@@ -1012,65 +1072,65 @@ function rupiah(n){return n.toLocaleString("id-ID");}
 toggleMeja();
 dp.addEventListener("input", updateSummary);
 
-function editQty(index, arah){
-  let item = orders[index];
+function editQty(index, change){
 
-  item.qty += arah;
-  if(item.qty < 1) item.qty = 1;
+  orders[index].qty += change;
 
-  item.subtotal = item.harga * item.qty;
+  if(orders[index].qty <= 0){
+    orders.splice(index,1);
+  }else{
+    orders[index].subtotal =
+      orders[index].qty * orders[index].harga;
+  }
 
   total = orders.reduce((s,o)=>s+o.subtotal,0);
   render();
 }
 
-let qtySelected = 1;
+function toggleQtyEdit(index){
 
-function ubahQty(arah){
+  const edit = document.getElementById("qtyEdit"+index);
 
-  if(!menu.value){
-    alert("Pilih menu dulu!");
-    return;
+  if(edit.style.display === "none"){
+    edit.style.display = "inline-flex";
+  }else{
+    edit.style.display = "none";
   }
 
+}
+
+function pilihMenu(){
+
   const val = menu.value;
+  if(!val) return;
+
   const [nama,h] = val.split("|");
   const harga = parseInt(h);
 
-  if(arah === 1){
-    orders.push({
-      nama,
-      qty: 1,
-      harga: harga,
-      subtotal: harga
-    });
-  }
+  // cek apakah menu sudah ada
+  let existing = orders.find(o => o.nama === nama);
 
-  if(arah === -1){
-    for(let i = orders.length - 1; i >= 0; i--){
-      if(orders[i].nama === nama){
-        orders.splice(i,1);
-        break;
-      }
-    }
+  if(existing){
+    existing.qty += 1;
+    existing.subtotal = existing.qty * existing.harga;
+  }else{
+    orders.push({
+      nama:nama,
+      qty:1,
+      harga:harga,
+      subtotal:harga
+    });
   }
 
   total = orders.reduce((s,o)=>s+o.subtotal,0);
   render();
 
-  // update angka visual
-  qtySelected += arah;
-  if(qtySelected < 1) qtySelected = 1;
-
-  document.getElementById("qtyValue").textContent = qtySelected;
+  // reset dropdown
+  menu.value="";
 }
-
-qtySelected = 1;
-document.getElementById("qtyValue").textContent = 1;
 
 
 </script>
 </body>
 
 </html>
-
