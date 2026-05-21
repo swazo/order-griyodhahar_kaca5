@@ -469,7 +469,7 @@ margin-top:8px;
 <input id="nama" oninput="validasiNama(this)" placeholder="Masukkan Nama">
 
 <label>Jumlah Orang</label>
-<input type="number" id="orang" placeholder="Masukkan Jumlah Orang">
+<input type="number" id="orang" placeholder="Masukkan Jumlah Orang" oninput="filterMeja()">
 </div>
 
 <label>
@@ -836,15 +836,38 @@ function toggleMeja(){
   }
 }
 
-function filterMenu(){
+function filterMeja(){
+  const jumlah = parseInt(document.getElementById("orang").value) || 0;
+  const mejaSelect = document.getElementById("posisi");
 
+  Array.from(mejaSelect.options).forEach(opt => {
+
+    // gazebo 1-4
+    if(
+      opt.text === "Gazebo 1" ||
+      opt.text === "Gazebo 2" ||
+      opt.text === "Gazebo 3" ||
+      opt.text === "Gazebo 4"
+    ){
+
+      // kalau jumlah > 8 → sembunyikan
+      opt.hidden = jumlah > 8;
+
+      // reset pilihan kalau sebelumnya pilih gazebo
+      if(jumlah > 8 && mejaSelect.value === opt.text){
+        mejaSelect.value = "";
+      }
+
+    }
+
+  });
+}	
+
+function filterMenu(){
   const list = document.getElementById("menuList");
   const k = kategori.value;
-
   const searchBox = document.getElementById("searchBox");
-
   list.innerHTML = "";
-
   if(!menuDB[k]){
     list.innerHTML = "Pilih kategori dulu";
     searchBox.style.display = "none";
